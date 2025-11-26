@@ -1,36 +1,45 @@
+# database.py
 import sqlite3
 
-DB_NAME = 'expenses.db'
-
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect('expenses.db')
     c = conn.cursor()
-    # Create table if it doesn't exist
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS expenses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            amount REAL NOT NULL,
-            date TEXT NOT NULL
-        )
-    ''')
+    c.execute('''CREATE TABLE IF NOT EXISTS expenses
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  title TEXT NOT NULL,
+                  amount REAL NOT NULL,
+                  category TEXT,
+                  date TEXT)''')
+    conn.commit()
+    conn.close()
+
+def add_expense(title, amount, category, date):
+    conn = sqlite3.connect('expenses.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO expenses (title, amount, category, date) VALUES (?, ?, ?, ?)",
+              (title, amount, category, date))
     conn.commit()
     conn.close()
 
 def get_all_expenses():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect('expenses.db')
     c = conn.cursor()
     c.execute("SELECT * FROM expenses")
-    expenses = c.fetchall()
+    rows = c.fetchall()
     conn.close()
-    return expenses
+    return rows
 
-def add_expense(name, amount, date):
-    conn = sqlite3.connect(DB_NAME)
+def update_expense(expense_id, title, amount, category, date):
+    conn = sqlite3.connect('expenses.db')
     c = conn.cursor()
-    c.execute("INSERT INTO expenses (name, amount, date) VALUES (?, ?, ?)", (name, amount, date))
+    c.execute("UPDATE expenses SET title=?, amount=?, category=?, date=? WHERE id=?",
+              (title, amount, category, date, expense_id))
     conn.commit()
     conn.close()
 
-# Call init_db at import to ensure table exists
-init_db()
+def delete_expense(expense_id):
+    conn = sqlite3.connect('expenses.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM expenses WHERE id=?", (expense_id,))
+    conn.commit()
+    conn.close()
